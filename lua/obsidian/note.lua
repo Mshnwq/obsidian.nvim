@@ -1173,6 +1173,11 @@ Note.links = function(self)
   return search.find_links(self)
 end
 
+---@return obsidian.OutLinkMatch[]
+Note.outlinks = function(self)
+  return search.find_outlinks(self)
+end
+
 ---@param path obsidian.Path vault-relative-path
 ---@param style obsidian.link.LinkFormat?
 ---@return string foramted_path
@@ -1224,11 +1229,12 @@ end
 
 -- HACK: make backlink search lazy before we have proper cache
 local backlink_cache = {}
+local outlink_cache = {}
 
 --- Return note status counts, like obsidian's status bar
 ---
 ---@param update_backlink boolean|?
----@return { words: integer, chars: integer, properties: integer, backlinks: integer }?
+---@return { words: integer, chars: integer, properties: integer, backlinks: integer, outlinks: integer }?
 Note.status = function(self, update_backlink)
   local status = {}
   local wc = vim.fn.wordcount()
@@ -1242,6 +1248,13 @@ Note.status = function(self, update_backlink)
     backlink_cache[path] = num_backlinks
   else
     status.backlinks = backlink_cache[path] or 0
+  end
+  if self and (update_backlink or outlink_cache[path] == nil) then -- HACK:
+    local num_outlinks = #self:outlinks()
+    status.outlinks = num_outlinks
+    outlink_cache[path] = num_outlinks
+  else
+    status.outlinks = outlink_cache[path] or 0
   end
   return status
 end

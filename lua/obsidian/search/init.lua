@@ -490,6 +490,7 @@ M.resolve_note = function(query, opts)
 end
 
 ---@class obsidian.LinkMatch
+---@class obsidian.OutLinkMatch
 ---@field link string
 ---@field line integer
 ---@field start integer 0-indexed
@@ -518,6 +519,39 @@ M.find_links = function(note)
         }
         matches[#matches + 1] = match
         found[link] = true
+      end
+    end
+  end
+
+  return matches
+end
+
+-- Gather all unique outlinks from the a note.
+--
+---@param note obsidian.Note
+---@return obsidian.OutLinkMatch[]
+M.find_outlinks = function(note)
+  local matches = {}
+  ---@type table<string, boolean>
+  local found = {}
+  local lines = io.lines(tostring(note.path))
+
+  for lnum, line in vim.iter(lines):enumerate() do
+    for _, ref_match in ipairs(M.find_refs(line, { exclude = { "BlockID", "Tag" } })) do
+      local m_start, m_end = unpack(ref_match)
+      local link = string.sub(line, m_start, m_end)
+      local preceding = string.sub(line, m_start - 1, m_start - 1)
+      if link:match("^%[%[") and preceding ~= "!" then
+        if not found[link] then
+          local match = {
+            link = link,
+            line = lnum,
+            start = m_start - 1,
+            ["end"] = m_end - 1,
+          }
+          matches[#matches + 1] = match
+          found[link] = true
+        end
       end
     end
   end
