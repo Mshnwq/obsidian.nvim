@@ -46,7 +46,7 @@ local function bufenter_callback(ev)
   end
 
   -- Register keymap.
-  vim.keymap.set("n", "<CR>", api.smart_action, { expr = true, buffer = true, desc = "Obsidian Smart Action" })
+  -- vim.keymap.set("n", "<CR>", api.smart_action, { expr = true, buffer = true, desc = "Obsidian Smart Action" })
 
   vim.keymap.set("n", "]o", function()
     api.nav_link "next"
@@ -63,7 +63,7 @@ local function bufenter_callback(ev)
     require("obsidian.completion.plugin_initializers.blink").inject_sources()
   end
 
-  require("obsidian.lsp").start(ev.buf)
+  -- require("obsidian.lsp").start(ev.buf)
 
   if opts.footer.enabled then
     require("obsidian.footer").start(ev.buf)
